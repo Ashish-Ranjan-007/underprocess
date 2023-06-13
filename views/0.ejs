@@ -1,0 +1,206 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Translate v2.0</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/css/bootstrap.min.css" rel="stylesheet">
+  <style>
+    /* Style the dropzone */
+    .dropzone {
+  
+      border: 2px dashed #ccc;
+      padding: 2rem;
+      transition: border-color 0.3s ease;
+  
+    }
+  
+    /* Change border color when hovering over the dropzone */
+    .dropzone:hover {
+      border-color: #555;
+    }
+  
+    /* Adjust the file input height */
+    .dropzone input[type="file"] {
+      height: auto;
+  
+  
+  
+    }
+  
+    .heroBackground {
+      background-color: rgb(205, 218, 237);
+      height: 95vh;
+  
+    }
+  
+    #formData {
+      display: block;
+    }
+  
+    #resContainer {
+      display: none;
+      max-width: 80rem;
+    }
+  
+    #suport {
+      font-size: 0.7rem;
+  
+    }
+  </style>
+</head>
+
+
+<body>
+
+  <nav class="navbar navbar-expand-lg bg-dark navbar-dark">
+    <div class="container">
+      <a href="#" class="navbar-brand">Translator</a>
+      <button class="navbar-toggler" data-bs-target="#showme" data-bs-toggle="collapse"
+        aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="collapse navbar-collapse" id="showme">
+        <ul class="navbar-nav ms-auto">
+          <li class="nav-item"><a href="" class="nav-link">Home</a></li>
+        </ul>
+      </div>
+    </div>
+  </nav>
+
+
+  <div class="heroBackground">
+    <div class="container-fluid  heroBackground text-center p-4 d-flex justify-content-center align-items-center " id="wrapper">
+      <div class="container d-flex justify-content-center align-items-center">
+
+
+        <!-- this is form data  -->
+        <form enctype="multipart/form-data" id="formData">
+          <div class="form-group text-end ">
+            <input type="file" name="file" id="file" class="form-control dropzone  "></input>
+          </div>
+          <div class="form-group">
+            <select name="language" id="language" class="form-control">
+              <option value="" class="dropdown-item">Select Your Language</option>
+              <option value="hi" class="dropdown-item">Hindi</option>
+              <option value="en" class="dropdown-item">English</option>
+            </select>
+            <span id="langReq" class="text-danger"></span>
+          </div>
+          <button class="btn btn-info mt-2 " type="submit" id="translate">Translate</button><br />
+        </form>
+
+
+        <!-- loding image while waiting -->
+        <div id="loaderimg" style="display: none;">
+          <img src="loading.gif" alt="">
+        </div>
+
+      </div>
+    </div>
+
+    
+    <div>
+      <%- include("./translate.ejs")%>
+    </div>
+   
+  </div>
+ 
+
+    <!-- Bootstrap Files -->
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"></script>
+
+    <!-- socket.io cdn link -->
+    <script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+
+    <script>
+
+      // Sending Request in backGround without refreshing the page.
+      document.getElementById("translate").addEventListener('click', (e) => {
+        // preventing page refresh
+        e.preventDefault()
+
+
+        // formData is form container basically , it will disapper when user click translate
+        document.getElementById('formData').style.display = "none"
+   
+        // after hide the form div the loading image will be appeared  to the user
+        document.getElementById("loaderimg").style.display = "block"
+
+        //  getting file
+        const file = document.getElementById('file').files[0]
+        // getting language
+        const language = document.getElementById('language').value;
+        // setting up  endpoint
+        const url = "http://localhost:3000/translate"
+
+
+        // generating room for socket.io
+        const userid = uniqueId2;
+
+        // creating form instance 
+        const body = new FormData()
+        // appending data 
+        body.append('file', file)
+        body.append('language', language)
+        body.append('userid', uniqueId2)
+
+
+        const xhr = new XMLHttpRequest()
+        // setting up request type , end point and sync & async request
+        xhr.open('POST', url, true)
+        // xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+        // receiving response
+        xhr.onload = function () {
+
+          console.log(xhr.responseText)
+          if (xhr.status !== 200) {
+
+            // if we get error then showing form container
+            document.getElementById('formData').style.display = "block"
+            // hiding loading image 
+            document.getElementById("loaderimg").style.display = "none"
+            // alerting the error we get
+            // alert(xhr.responseText)
+
+            const err = JSON.parse(xhr.responseText)
+            var langWarn = document.getElementById('langReq');
+
+            if (err.message === "File required") {
+
+              langWarn.innerHTML = err.message;
+
+            } else if (err.message === "Language  required") {
+              langWarn.innerHTML = err.message;
+            } else if (err.message === "Invalid file format. Only PDF, JPG, and PNG files are allowed") {
+              langWarn.innerHTML = err.message;
+            }
+
+
+
+
+          }
+
+        }
+        // sending data
+        xhr.send(body)
+
+      }
+      )
+
+
+
+
+
+
+
+    </script>
+
+</body>
+
+</html>

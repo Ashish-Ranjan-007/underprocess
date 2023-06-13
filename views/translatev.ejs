@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <title>Translate v2.0</title>
+  <!-- Required meta tags -->
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+  <!-- Bootstrap CSS v5.2.1 -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" />
+</head>
+<body>
+<div class="container-fluid bg-light" id="resContainer">
+
+  <div class="container-fluid   text-center pt-5 py-5 " id="resCont" >
+    
+    <div class="row  ">
+      <div class="col-sm-12 col-md-6 col-lg-6 p-2">
+  
+        <label for="originalText " class="py-2">Original Text</label>
+        <!-- we are adding grammerly so that we can correct some english words if something missign while extracting -->
+        <grammarly-editor-plugin>
+          <textarea name="translate -1" id="originalText" cols="50" rows="15" class="form-control"></textarea>
+        </grammarly-editor-plugin>
+  
+            <div class="form-group mt-2">
+              <select name="language" id="languageupdate" class="form-control">
+                <option value="" class="dropdown-item">Select Your Language</option>
+                <option value="hi" class="dropdown-item">Hindi</option>
+                <option value="en" class="dropdown-item">English</option>
+                <option value="fr" class="dropdown-item">French</option>
+                <option value="es" class="dropdown-item">Spanish</option>
+                <option value="de" class="dropdown-item">German</option>
+                <option value="zh" class="dropdown-item">Chinese</option>
+                <option value="ja" class="dropdown-item">Japanese</option>
+                <option value="it" class="dropdown-item">Italian</option>
+                <option value="pt" class="dropdown-item">Portuguese</option>
+                <option value="ru" class="dropdown-item">Russian</option>
+                <option value="ar" class="dropdown-item">Arabic</option>
+                <option value="ko" class="dropdown-item">Korean</option>
+                <option value="nl" class="dropdown-item">Dutch</option>
+                <option value="sv" class="dropdown-item">Swedish</option>
+                <option value="pl" class="dropdown-item">Polish</option>
+                <option value="el" class="dropdown-item">Greek</option>
+                <option value="tr" class="dropdown-item">Turkish</option>
+                <option value="th" class="dropdown-item">Thai</option>
+                <option value="cs" class="dropdown-item">Czech</option>
+                <option value="da" class="dropdown-item">Danish</option>
+              </select>
+            </div>
+            <span id="updateReq" class="text-danger"></span>
+  
+      </div>
+      <div class="col-sm-12 col-md-6 col-lg-6 p-2">
+  
+  
+        <label for="translateme " class="py-2">Translated Text</label>
+        <grammarly-editor-plugin>
+          <textarea name="translate" id="translateme" cols="50" rows="15" class="form-control"></textarea>
+          <grammarly-editor-plugin>
+  
+            <div class="form-group mt-2">
+              <button onclick="speakText()">
+                <i class="fa-solid fa-play"></i>
+              </button>
+              <button onclick="stopSpeaking()">
+                <i class="fa-solid fa-stop"></i>
+              </button>
+            </div>
+      </div>
+  
+    </div>
+    <div class="pt-2">
+      <button class="btn btn-primary" id="update">UPDATE</button>
+      <button class="btn btn-primary" id="clear">CLEAR</button>
+      <hr />
+  
+      <div>
+        <button class="btn btn-primary" id="pdf" onclick="downloadAsPdf()">PDF</button>
+        <button class="btn btn-primary" onclick="Export2Doc('translateme');">DOC</button>
+        <button class="btn btn-primary" id="getAudio">Audio</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.4.0/jspdf.umd.min.js"></script>
+
+<script src="https://cdn.socket.io/4.6.0/socket.io.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@grammarly/editor-sdk?clientId=client_MZoUVXv3wGiC4HPZghBPcg"></script>
+
+<!-- Bootstrap JavaScript Libraries -->
+<script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.11.6/dist/umd/popper.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.1/dist/js/bootstrap.min.js"></script>
+
+<script>
+
+
+  // handling socket.io response
+  const socket = io({ reconnection: false });
+
+  // generating room 
+  const uniqueId2 = Math.floor(Math.random() * Date.now()).toString();
+  socket.emit('joinRoom', uniqueId2);
+
+  // checking if textarea is already cleared or not
+  let isFieldsCleared = false;
+
+  socket.on('message', function (data) {
+
+    if (data) {
+console.log(data)
+      // console.log(data.message.originalText)
+      // console.log(data.message.translate)
+
+  var wrapper=document.getElementById("wrapper")
+      wrapper.classList.add('d-none')
+      document.getElementById('resContainer').style.display = "block";
+      document.getElementById("loaderimg").style.display = "none"
+
+      const textarea = document.getElementById("translateme");
+      const original = document.getElementById("originalText");
+console.log(isFieldsCleared)
+      if (!isFieldsCleared) {
+        textarea.value = "";
+        original.value = "";
+        isFieldsCleared = true;
+      }
+
+      // textarea.value = ""
+      // original.value = ""
+
+      // adding received data to textarea
+      textarea.value += `${data.message.translate}\n`;
+      original.value += data.message.originalText;
+
+      // hide loading image after execution done.
+      document.getElementById("loaderimg").style.display = "none"
+
+    } else {
+      console.log(data);
+    }
+
+  })
+
+
+
+  // clear textarea with button
+  document.getElementById("clear").addEventListener('click', (e) => {
+    e.preventDefault()
+    document.getElementById("translateme").value = ""
+    document.getElementById("originalText").value = ""
+
+  })
+
+  // updating data if something error
+  document.getElementById("update").addEventListener("click", (e) => {
+    e.preventDefault()
+
+
+
+    var wrapper=document.getElementById("wrapper")
+        wrapper.classList.remove('d-none')
+    document.getElementById('resContainer').style.display = "none";
+    document.getElementById("loaderimg").style.display = "block"
+    const reqUpdateText = document.getElementById("originalText").value;
+    const language = document.getElementById('languageupdate').value;
+    const url = "http://localhost:3000/translate"
+
+
+    const updateBody = new FormData()
+    updateBody.append("reqUpdateText", reqUpdateText)
+    updateBody.append("updatelanguage", language)
+    updateBody.append('userid', uniqueId2)
+
+    
+
+    const xhr = new XMLHttpRequest()
+    xhr.open('POST', url, true)
+    xhr.onload = function () {
+      console.log(xhr.status)
+      var updateReq=document.getElementById("updateReq")
+      if (xhr.status !== 200) {
+        const updateResponse = JSON.parse(xhr.responseText)
+        document.getElementById('resContainer').style.display = "block";
+        document.getElementById("loaderimg").style.display = "none"
+        wrapper.classList.add('d-none')
+        updateReq.innerHTML=updateResponse.message
+       
+      } else {
+        // preventing duplicating text
+        document.getElementById("translateme").value = ""
+        document.getElementById("originalText").value = ""
+        updateReq.innerHTML=""
+      }
+    }
+    xhr.send(updateBody)
+
+
+
+  })
+
+
+  function downloadAsPdf() {
+    const element = document.getElementById('translateme').value;
+    html2pdf().from(element).set({ filename: 'translate', margin: 10 }).save();
+  }
+
+  function convertToDoc() {
+    const element = document.getElementById('translateme').value;
+    html2pdf().from(element).set({ margin: 1, filename: 'translate.doc' }).output('datauristring').then((pdfString) => {
+      const doc = new jsPDF();
+      doc.text(10, 10, 'Converting HTML to DOC');
+      doc.addHTML(pdfString, 10, 20, {
+        pagesplit: true,
+        background: '#fff'
+      }, () => {
+        doc.save('translate.doc');
+      });
+    });
+  }
+
+  function speakText() {
+    var text = document.getElementById('translateme').value;
+
+    var utterance = new SpeechSynthesisUtterance(text);
+
+    // Optional: Customize speech synthesis options
+    utterance.lang = 'hi';
+    utterance.rate = .8;
+    // utterance.pitch = 1.0;
+
+    speechSynthesis.speak(utterance);
+
+    speech.synthesize(text, function (blob) {
+      var audioUrl = URL.createObjectURL(blob);
+
+      var link = document.createElement('a');
+      link.href = audioUrl;
+      link.download = 'audio.mp3';
+      link.click();
+      URL.revokeObjectURL(audioUrl);
+    });
+
+  }
+
+
+  function stopSpeaking() {
+    speechSynthesis.cancel();
+  }
+
+
+
+  function Export2Doc(element, filename = '') {
+
+    var preHtml = "<html xmlns:o='urn:schemas-microsoft-com:office:office' xmlns:w='urn:schemas-microsoft-com:office:word' xmlns='http://www.w3.org/TR/REC-html40'><head><meta charset='utf-8'><title>Export HTML To Doc</title></head><body>";
+    var postHtml = "</body></html>";
+
+    var html = preHtml + document.getElementById(element).value + postHtml;
+
+    var blob = new Blob([
+      '\ufeff', html
+    ], { type: 'application/msword' });
+
+    var url = 'data:application/vnd.ms-word;charset=utf-8,' + encodeURIComponent(html);
+
+
+    filename = filename ? filename + '.doc' : 'document.doc';
+
+
+    var downloadLink = document.createElement("a");
+
+    document.body.appendChild(downloadLink);
+
+    if (navigator.msSaveOrOpenBlob) {
+      navigator.msSaveOrOpenBlob(blob, filename);
+    } else {
+
+      downloadLink.href = url;
+      downloadLink.download = filename;
+      downloadLink.click();
+    }
+
+    document.body.removeChild(downloadLink);
+  }
+
+  let clickCount = 0;
+let buttonDisabled = false;
+
+  document.getElementById("getAudio").addEventListener("click", (e) => {
+    e.preventDefault()
+
+    if (buttonDisabled) {
+    return; // Exit if the button is disabled
+  }
+
+  clickCount++;
+
+  if (clickCount >= 3) {
+    alert("maximum click reached")
+    buttonDisabled = true;
+    clickCount = 0;
+
+    setTimeout(() => {
+      buttonDisabled = false;
+    }, 30000); // Enable the button after 30 seconds
+  }
+
+
+
+    const mp3Text = document.getElementById("translateme").value;
+    const url = "http://localhost:3000/translate"
+    const xhr = new XMLHttpRequest()
+    const audioBody = new FormData()
+    audioBody.append('audio', mp3Text)
+    audioBody.append('userid', uniqueId2)
+
+
+
+    xhr.open("POST", url, true)
+    xhr.responseType = "blob";
+    
+    xhr.onload = function () {
+      console.log("receving data please wait")
+      const audioBlob = xhr.response;
+      const audioUrl = URL.createObjectURL(audioBlob);
+
+
+      const downloadLink = document.createElement("a");
+      downloadLink.href = audioUrl;
+      downloadLink.download = "audio.mp3";
+
+      downloadLink.click();
+      URL.revokeObjectURL(audioUrl);
+    }
+    xhr.send(audioBody)
+
+
+  })
+
+
+
+</script>
+
+
+
+</body>
+
+</html>

@@ -1,0 +1,226 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/css/bootstrap.min.css" integrity="sha384-ggOyR0iXCbMQv3Xipma34MD+dH/1fQ784/j6cY/iJTQUOhcWr7x9JvoRxT2MZw1T" crossorigin="anonymous">
+
+    <title> Translator </title>
+  
+    <style>
+
+      
+    
+      
+ 
+      
+        .heroBackground {
+          background-color: rgb(205, 218, 237);
+          height: 100vh;
+      
+        }
+      
+        #formData {
+          display: block;
+        }
+      #resCont{
+        max-width: 80rem;
+      }
+        #resContainer {
+          display: none;
+          min-height: 100vh;
+          
+        }
+      
+        #suport {
+          font-size: 0.7rem;
+      
+        }
+        .dropzone{
+           background-color: white;
+           padding: 5rem;
+        }
+        .dropzone:hover{
+            border: 1px dotted hotpink;
+        }
+       
+      </style>
+</head>
+  <body>
+  
+
+
+
+    <nav class="navbar navbar-expand-lg bg-dark navbar-dark ">
+        <div class="container">
+          <a href="" class="navbar-brand">Translator v2.0</a>
+          <button class="navbar-toggler" data-target="#showme" data-toggle="collapse">
+            <span class="navbar-toggler-icon"></span>
+          </button>
+          <div class="collapse navbar-collapse text-center" id="showme">
+            <ul class="navbar-nav ml-auto">
+              <li class="nav-item"><a href="" class="nav-link">Home</a></li>
+            </ul>
+          </div>
+        </div>
+      </nav>
+
+
+      <div class="heroBackground">
+        <div class="container-fluid   " id="wrapper">
+          <div class="container text-center p-4 d-flex justify-content-center align-items-center vh-100">
+    
+    
+            <!-- this is form data  -->
+            <form enctype="multipart/form-data" id="formData">
+              <div class="form-group text-end ">
+                <input type="file" name="file" id="file" class="form-control dropzone "></input>
+              </div>
+              <div class="form-group">
+                <select name="language" id="language" class="form-control">
+                  <option value="" class="dropdown-item">Select Your Language</option>
+                  <option value="" class="dropdown-item">Select Your Language</option>
+                  <option value="hi" class="dropdown-item">Hindi</option>
+                  <option value="en" class="dropdown-item">English</option>
+                  <option value="fr" class="dropdown-item">French</option>
+                  <option value="es" class="dropdown-item">Spanish</option>
+                  <option value="de" class="dropdown-item">German</option>
+                  <option value="zh" class="dropdown-item">Chinese</option>
+                  <option value="ja" class="dropdown-item">Japanese</option>
+                  <option value="it" class="dropdown-item">Italian</option>
+                  <option value="pt" class="dropdown-item">Portuguese</option>
+                  <option value="ru" class="dropdown-item">Russian</option>
+                  <option value="ar" class="dropdown-item">Arabic</option>
+                  <option value="ko" class="dropdown-item">Korean</option>
+                  <option value="nl" class="dropdown-item">Dutch</option>
+                  <option value="sv" class="dropdown-item">Swedish</option>
+                  <option value="pl" class="dropdown-item">Polish</option>
+                  <option value="el" class="dropdown-item">Greek</option>
+                  <option value="tr" class="dropdown-item">Turkish</option>
+                  <option value="th" class="dropdown-item">Thai</option>
+                  <option value="cs" class="dropdown-item">Czech</option>
+                  <option value="da" class="dropdown-item">Danish</option>
+                </select>
+                <span id="langReq" class="text-danger"></span>
+              </div>
+              <button class="btn btn-info mt-2 " type="submit" id="translate">Translate</button><br />
+            </form>
+    
+    
+            <!-- loding image while waiting -->
+            <div id="loaderimg" style="display: none;">
+              <img src="loading.gif" alt="">
+            </div>
+    
+          </div>          
+        </div>
+
+        <div class="">
+            <%- include("./translatev.ejs")%>
+          </div>
+    
+       
+      </div>
+
+
+
+
+
+
+    <!-- Optional JavaScript -->
+    <!-- jQuery first, then Popper.js, then Bootstrap JS -->
+    <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js" integrity="sha384-q8i/X+965DzO0rT7abK41JStQIAqVgRVzpbzo5smXKp4YfRvH+8abtTE1Pi6jizo" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/popper.js@1.14.7/dist/umd/popper.min.js" integrity="sha384-UO2eT0CpHqdSJQ6hJty5KVphtPhzWj9WO1clHTMGa3JDZwrnQq4sF86dIHNDz0W1" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.3.1/dist/js/bootstrap.min.js" integrity="sha384-JjSmVgyd0p3pXB1rRibZUAYoIIy6OrQ6VrjIEaFf/nJGzIxFDsf4x0xIM+B07jRM" crossorigin="anonymous"></script>
+      
+    <script>
+
+        // Sending Request in backGround without refreshing the page.
+        document.getElementById("translate").addEventListener('click', (e) => {
+          // preventing page refresh
+          e.preventDefault()
+  
+  
+          // formData is form container basically , it will disapper when user click translate
+          document.getElementById('formData').style.display = "none"
+     
+          // after hide the form div the loading image will be appeared  to the user
+          document.getElementById("loaderimg").style.display = "block"
+  
+          //  getting file
+          const file = document.getElementById('file').files[0]
+          // getting language
+          const language = document.getElementById('language').value;
+          // setting up  endpoint
+          const url = "http://localhost:3000/translate"
+  
+  
+          // generating room for socket.io
+          const userid = uniqueId2;
+  
+          // creating form instance 
+          const body = new FormData()
+          // appending data 
+          body.append('file', file)
+          body.append('language', language)
+          body.append('userid', uniqueId2)
+  
+  
+          const xhr = new XMLHttpRequest()
+          // setting up request type , end point and sync & async request
+          xhr.open('POST', url, true)
+          // xhr.setRequestHeader('Content-Type', 'multipart/form-data');
+          // receiving response
+          xhr.onload = function () {
+  
+            console.log(xhr.responseText)
+            if (xhr.status !== 200) {
+  
+              // if we get error then showing form container
+              document.getElementById('formData').style.display = "block"
+              // hiding loading image 
+              document.getElementById("loaderimg").style.display = "none"
+              // alerting the error we get
+              // alert(xhr.responseText)
+  
+              const err = JSON.parse(xhr.responseText)
+              var langWarn = document.getElementById('langReq');
+  
+              if (err.message === "File required") {
+  
+                langWarn.innerHTML = err.message;
+  
+              } else if (err.message === "Language  required") {
+                langWarn.innerHTML = err.message;
+              } else if (err.message === "Invalid file format. Only PDF, JPG, and PNG files are allowed") {
+                langWarn.innerHTML = err.message;
+              }else if(err.message==="Language not supported"){
+                langWarn.innerHTML=`${err.message} we are working on it`
+              }
+  
+  
+  
+  
+            }
+  
+          }
+          // sending data
+          xhr.send(body)
+  
+        }
+        )
+  
+  
+  
+  
+  
+  
+  
+      </script>
+
+
+</body>
+</html>
